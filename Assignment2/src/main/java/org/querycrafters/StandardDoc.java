@@ -36,5 +36,8 @@ public class StandardDoc {
     public void addSection(String Content){
         doc.add(new Field("Section", Content, ft));
     }
+    public Document getDoc(){
+        return doc;
+    }
 
 }
