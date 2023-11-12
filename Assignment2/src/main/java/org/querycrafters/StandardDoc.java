@@ -10,8 +10,8 @@ public class StandardDoc {
     FieldType ft;
 
     public StandardDoc() {
-        Document doc = new Document();
-        FieldType ft = new FieldType(TextField.TYPE_STORED);
+        this.doc = new Document();
+        this.ft = new FieldType(TextField.TYPE_STORED);
         ft.setTokenized(true);
         ft.setStoreTermVectors(true);
         ft.setStoreTermVectorPositions(true);
