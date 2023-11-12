@@ -1,0 +1,41 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+Assignment2/.idea/modules.xml
+Assignment2/.idea/jarRepositories.xml
+Assignment2/.idea/compiler.xml
+Assignment2/.idea/libraries/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+Assignment2/.apt_generated
+Assignment2/.classpath
+Assignment2/.factorypath
+Assignment2/.project
+Assignment2/.settings
+Assignment2/.springBeans
+Assignment2/.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Resources ###
+Assignment2/src/main/resources/*/*
