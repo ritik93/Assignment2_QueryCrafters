@@ -41,7 +41,7 @@ public class LATimesParser {
                         doc = new StandardDoc();
                     }
                     inDoc = true;
-                    String docNo = line.replace("<DOCNO>", "");
+                    String docNo = line.replace("<DOCNO>", "").replace("</DOCNO>", "");
                     doc.addDocNo(docNo);
                 }
                 if(inDoc){
