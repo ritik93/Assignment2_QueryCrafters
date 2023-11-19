@@ -1,5 +1,6 @@
 package org.querycrafters;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -10,17 +11,17 @@ import java.io.*;
 import java.nio.file.Paths;
 
 public class LATimesParser {
-    private StandardAnalyzer analyzer;
+    private Analyzer analyzer;
     private Directory directory;
 
-    public LATimesParser(StandardAnalyzer analyzer, String outputDir) throws IOException {
+    public LATimesParser(Analyzer analyzer, String outputDir) throws IOException {
         this.analyzer = analyzer;
         this.directory = FSDirectory.open(Paths.get(outputDir));
     }
 
     public void index(File file) throws IOException {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         IndexWriter writer = new IndexWriter(directory, config);
 
         StandardDoc doc = new StandardDoc();
@@ -61,6 +62,7 @@ public class LATimesParser {
                         date = false;
                         if (currentString.length() > 0) {
                             doc.addDate(currentString.toString());
+                            // System.out.print(String.format("Date\n => %s\n\n", currentString.toString()));
                             currentString = new StringBuilder();
                         }
                     }
@@ -74,6 +76,7 @@ public class LATimesParser {
                         title = false;
                         if (currentString.length() > 0) {
                             doc.addTitle(currentString.toString());
+                            // System.out.print(String.format("Headline\n => %s\n\n", currentString.toString()));
                             currentString = new StringBuilder();
                         }
                     }
@@ -87,6 +90,7 @@ public class LATimesParser {
                         author = false;
                         if (currentString.length() > 0) {
                             doc.addAuthor(currentString.toString());
+                            // System.out.print(String.format("Byline\n => %s\n\n", currentString.toString()));
                             currentString = new StringBuilder();
                         }
                     }
@@ -100,6 +104,7 @@ public class LATimesParser {
                         content = false;
                         if (currentString.length() > 0) {
                             doc.addContent(currentString.toString());
+                            // System.out.print(String.format("Text\n => %s\n\n", currentString.toString()));
                             currentString = new StringBuilder();
                         }
                     }
