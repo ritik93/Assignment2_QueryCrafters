@@ -10,12 +10,6 @@ import org.apache.lucene.store.FSDirectory;
 import java.io.*;
 import java.nio.file.Paths;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,18 +27,7 @@ public class FBSIParser {
         config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         IndexWriter writer = new IndexWriter(directory, config);
 
-
         StandardDoc doc = new StandardDoc();
-        boolean inDoc = false;
-        boolean date = false;
-        boolean content = false;
-        boolean isText = false;
-        StringBuilder currentString = new StringBuilder();
-
-        //List<String> documentLines = Files.readAllLines(Path.of(directory), StandardCharsets.ISO_8859_1);
-        List<String> documentLines = Files.readAllLines(file.toPath(), StandardCharsets.ISO_8859_1);
-        List<Map<String, String>> documents = new ArrayList<>();
-        Map<String, String> currentDocument = new HashMap<>();
 
         String currentField = null;
         StringBuilder currentValue = new StringBuilder();
@@ -64,8 +47,7 @@ public class FBSIParser {
                 while (matcher.find()) {
                     currentField = matcher.group(1);
                     currentValue.append(matcher.group(2)).append(" ");
-                    currentDocument.put(currentField, currentValue.toString().trim());
-                    // System.out.print(String.format("%s\n => %s\n\n",currentField, currentValue.toString()));
+                    addToDoc(doc, currentField, currentValue.toString().trim());
                     currentValue.setLength(0);
                 }
             } else if (line.matches("<(" + tags + ")>.*")) {
@@ -87,13 +69,11 @@ public class FBSIParser {
                 
                 while (matcher.find()) {
                     if (line.equals("</DOC>")) {
-                        // System.out.print("======================================================================================\n");
-                        documents.add(currentDocument);
-                        currentDocument = new HashMap<>();
+                        writer.addDocument(doc.getDoc());
+                        doc = new StandardDoc();
                     } else {
                         currentValue.append(matcher.group(1)).append(" ");
-                        currentDocument.put(currentField, currentValue.toString().trim());
-                        // System.out.print(String.format("%s\n => %s\n\n",currentField, currentValue.toString()));
+                        addToDoc(doc, currentField, currentValue.toString().trim());
                         currentValue.setLength(0);
                     }
                 }
@@ -107,6 +87,22 @@ public class FBSIParser {
     }
     public void shutdown() throws IOException {
         directory.close();
+    }
+
+    private void addToDoc(StandardDoc doc, String currentField, String currentValue) throws IOException {
+        switch (currentField) {
+            case "DOCNO":
+                doc.addDocNo(currentValue);
+                break;
+            case "DATE1":
+                doc.addDate(currentValue);
+                break;
+            case "TEXT":
+                doc.addContent(currentValue);
+                break;
+            default:
+                System.out.print(String.format("Unkown field parsed: %s\n => %s\n\n",currentField, currentValue.toString()));
+        }
     }
 
     public static void main(String[] args) throws IOException {

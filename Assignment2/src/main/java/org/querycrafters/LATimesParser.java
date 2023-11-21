@@ -62,7 +62,6 @@ public class LATimesParser {
                         date = false;
                         if (currentString.length() > 0) {
                             doc.addDate(currentString.toString());
-                            // System.out.print(String.format("Date\n => %s\n\n", currentString.toString()));
                             currentString = new StringBuilder();
                         }
                     }
@@ -76,7 +75,6 @@ public class LATimesParser {
                         title = false;
                         if (currentString.length() > 0) {
                             doc.addTitle(currentString.toString());
-                            // System.out.print(String.format("Headline\n => %s\n\n", currentString.toString()));
                             currentString = new StringBuilder();
                         }
                     }
@@ -90,7 +88,6 @@ public class LATimesParser {
                         author = false;
                         if (currentString.length() > 0) {
                             doc.addAuthor(currentString.toString());
-                            // System.out.print(String.format("Byline\n => %s\n\n", currentString.toString()));
                             currentString = new StringBuilder();
                         }
                     }
@@ -104,7 +101,6 @@ public class LATimesParser {
                         content = false;
                         if (currentString.length() > 0) {
                             doc.addContent(currentString.toString());
-                            // System.out.print(String.format("Text\n => %s\n\n", currentString.toString()));
                             currentString = new StringBuilder();
                         }
                     }

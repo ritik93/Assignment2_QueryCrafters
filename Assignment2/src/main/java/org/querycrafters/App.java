@@ -12,22 +12,20 @@ import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.querycrafters.FBSIParser;
 import org.querycrafters.LATimesParser;
 
-/**
- * Hello world!
- *
- */
 public class App 
 {
     public static void main(String[] args) throws IOException {
-        // call with:
-        // java -jar target/Assignment2-0.1.jar StandardAnalyzer "../Assignment2/index" "/src/main/resources/Assignment Two/"
-        if (args.length <= 2) {
-            System.out.println("Expected arguments: <analyzerType> <indexDirectory> <documentFilePath>");
+        // example calls:
+        // java -jar target/Assignment2-0.1.jar StandardAnalyzer
+        // java -jar target/Assignment2-0.1.jar SimpleAnalyzer
+        // java -jar target/Assignment2-0.1.jar EnglishAnalyzer
+        // java -jar target/Assignment2-0.1.jar EnglishAnalyzer-getDefaultStopSet
+        if (args.length < 1) {
+            System.out.println("Expected arguments: <analyzerType>");
             System.exit(1);
         }
         String analyzerType = args[0];        
-        String outputDir = args[1] + "/" + analyzerType;
-        String filePath = args[2];
+        String outputDir = "../Assignment2/index/" + analyzerType;
 
         System.out.printf("Using Analyzer: %s\n", analyzerType);
         Analyzer analyzer = null;
@@ -49,7 +47,7 @@ public class App
                 System.out.println("Invalid analyzer type. Valid: StandardAnalyzer, SimpleAnalyzer, and EnglishAnalyzer.");
         }
 
-        System.out.println("Indexing FBSI");
+        System.out.println("Indexing Foreign Broadcast Information Service");
         FBSIParser FBSIParser = new FBSIParser(analyzer, outputDir);
         File FBSIfolder = new File (System.getProperty("user.dir") + "/src/main/resources/Assignment Two/fbis");
         File[] FBSIfiles = FBSIfolder.listFiles(new FilenameFilter() {
@@ -76,6 +74,11 @@ public class App
             LATimesParser.index(file);
         }
         LATimesParser.shutdown();
-    }
+    
+        // Todo
+        System.out.println("Indexing FR routing data");
 
+        // Todo
+        System.out.println("Indexing Financial Times");
+    }
 }
