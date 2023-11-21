@@ -1,5 +1,6 @@
 package org.querycrafters;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -10,17 +11,17 @@ import java.io.*;
 import java.nio.file.Paths;
 
 public class LATimesParser {
-    private StandardAnalyzer analyzer;
+    private Analyzer analyzer;
     private Directory directory;
 
-    public LATimesParser(StandardAnalyzer analyzer, String outputDir) throws IOException {
+    public LATimesParser(Analyzer analyzer, String outputDir) throws IOException {
         this.analyzer = analyzer;
         this.directory = FSDirectory.open(Paths.get(outputDir));
     }
 
     public void index(File file) throws IOException {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
-        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+        config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         IndexWriter writer = new IndexWriter(directory, config);
 
         StandardDoc doc = new StandardDoc();
