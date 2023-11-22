@@ -7,9 +7,7 @@ import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.search.similarities.*;
 
-import org.querycrafters.Utils.commonIndexer;
 import org.querycrafters.Utils.CustomAnalyzer;
-import org.querycrafters.templates.topics;
 
 import org.apache.commons.cli.*;
 

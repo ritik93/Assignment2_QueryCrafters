@@ -39,3 +39,6 @@ build/
 
 ### Resources ###
 Assignment2/src/main/resources/*/*
+
+### idea ###
+.idea/
