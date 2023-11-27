@@ -5,10 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cc07d7fe-da57-4ea0-aab0-f1fa91efb190" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/querycrafters/SearchClass.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/org/querycrafters/TopicParser.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/querycrafters/LATimesParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/querycrafters/LATimesParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/querycrafters/StandardDoc.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/querycrafters/StandardDoc.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/querycrafters/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/querycrafters/App.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
