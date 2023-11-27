@@ -6,14 +6,23 @@ import java.io.IOException;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.similarities.BooleanSimilarity;
+import org.apache.lucene.search.similarities.ClassicSimilarity;
+import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 
 import org.querycrafters.FBSIParser;
 import org.querycrafters.LATimesParser;
+import org.querycrafters.Utils.commonIndexer;
+import org.querycrafters.Utils.CustomAnalyzer;
 
 public class App 
 {
+    //Path to stopwords used in the custom analyzer
+    public static String stopwords_path = "./stopwords.txt";
+
     public static void main(String[] args) throws IOException {
         // example calls:
         // java -jar target/Assignment2-0.1.jar StandardAnalyzer
@@ -21,7 +30,7 @@ public class App
         // java -jar target/Assignment2-0.1.jar EnglishAnalyzer
         // java -jar target/Assignment2-0.1.jar EnglishAnalyzer-getDefaultStopSet
         if (args.length < 1) {
-            System.out.println("Expected arguments: <analyzerType>");
+            System.out.println("Expected arguments: <analyzerType> <similarityType>");
             System.exit(1);
         }
         String analyzerType = args[0];        
@@ -42,9 +51,28 @@ public class App
             case "EnglishAnalyzer-getDefaultStopSet":
                 analyzer = new StandardAnalyzer(EnglishAnalyzer.getDefaultStopSet());
                 break;
+            case "CustomAnalyzer":
+                analyzer = new CustomAnalyzer();
+                break;
             default:
                 analyzer = null;
-                System.out.println("Invalid analyzer type. Valid: StandardAnalyzer, SimpleAnalyzer, and EnglishAnalyzer.");
+                System.out.println("Invalid analyzer type. Valid: StandardAnalyzer, SimpleAnalyzer, EnglishAnalyzer or CustomAnalyzer.");
+        }
+
+        String similarityType = args[1];
+        System.out.printf("Using Similarity Score: %s\n", similarityType);
+        Similarity similarity = null;
+        switch (similarityType) {
+            case "Classic":
+                similarity = new ClassicSimilarity();
+                break;
+            case "BM25":
+                similarity = new BM25Similarity();
+            case "Boolean":
+                similarity = new BooleanSimilarity();
+            default:
+                similarity = null;
+                System.out.println("Invalid Similarity Type. Valid : Classic, BM25, or Boolean");
         }
 
         System.out.println("Indexing Foreign Broadcast Information Service");
@@ -74,12 +102,13 @@ public class App
             LATimesParser.index(file);
         }
         LATimesParser.shutdown();
-    
-        // Todo
-        System.out.println("Indexing FR routing data");
+        
+        System.out.println("Indexing Financial Times");
+        commonIndexer ft_indexer = new commonIndexer();
+        ft_indexer.gen_ind(analyzer, similarity);
 
         // Todo
-        System.out.println("Indexing Financial Times");
+        System.out.println("Indexing FR routing data");
     }
 }
 // Adding modifications to App.java below

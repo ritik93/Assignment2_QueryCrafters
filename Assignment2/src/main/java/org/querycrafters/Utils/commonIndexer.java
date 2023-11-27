@@ -47,7 +47,7 @@ public class commonIndexer {
         System.out.println(String.valueOf(alldocs.size()) + " have been indexed \nIndexing complete");
     }
 
-    public static void gen_ind(Analyzer analyzer, Similarity similarity) throws IOException {
+    public void gen_ind(Analyzer analyzer, Similarity similarity) throws IOException {
         Indexer(analyzer, similarity);
     }
 }
