@@ -27,9 +27,6 @@ public class App
     //Path to stopwords used in the custom analyzer
     public static String stopwords_path = "./stopwords.txt";
 
-    public App() throws FileNotFoundException {
-    }
-
     public static void main(String[] args) throws IOException, ParseException {
         // example calls:
         // java -jar target/Assignment2-0.1.jar StandardAnalyzer
