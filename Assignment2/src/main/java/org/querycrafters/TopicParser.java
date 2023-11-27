@@ -23,6 +23,7 @@ public class TopicParser {
                         isDescription = false;
                         if (currentString.length() > 0) {
                             queries.add(currentString.toString().trim());
+                            currentString = new StringBuilder();
                         }
                     }
                     else if (isDescription) {
