@@ -28,11 +28,12 @@ public class App
     public static String stopwords_path = "./stopwords.txt";
 
     public static void main(String[] args) throws IOException, ParseException {
-        // example calls:
-        // java -jar target/Assignment2-0.1.jar StandardAnalyzer
-        // java -jar target/Assignment2-0.1.jar SimpleAnalyzer
-        // java -jar target/Assignment2-0.1.jar EnglishAnalyzer
-        // java -jar target/Assignment2-0.1.jar EnglishAnalyzer-getDefaultStopSet
+        /* example calls:
+            java -jar target/Assignment2-0.1.jar StandardAnalyzer BM25
+            java -jar target/Assignment2-0.1.jar SimpleAnalyzer BM25
+            java -jar target/Assignment2-0.1.jar EnglishAnalyzer Classic
+            java -jar target/Assignment2-0.1.jar EnglishAnalyzer-getDefaultStopSet Boolean
+        */
         if (args.length < 1) {
             System.out.println("Expected arguments: <analyzerType> <similarityType>");
             System.exit(1);
@@ -72,8 +73,10 @@ public class App
                 break;
             case "BM25":
                 similarity = new BM25Similarity();
+                break;
             case "Boolean":
                 similarity = new BooleanSimilarity();
+                break;
             default:
                 similarity = null;
                 System.out.println("Invalid Similarity Type. Valid : Classic, BM25, or Boolean");
