@@ -11,7 +11,7 @@ import org.jsoup.nodes.Element;
 import org.querycrafters.templates.ft_template;
 
 public class ft_parser {
-    private final static File ft_directory = new File("Documents/ft");
+    private final static File ft_directory = new File("Assignment2/src/main/java/org/querycrafters/Documents/ft");
 
     private static ArrayList<ft_template> ft_list = new ArrayList<>();
 
