@@ -3,6 +3,10 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Index and Results ###
+Assignment2/index/*
+Assignment2/results/*
+
 ### IntelliJ IDEA ###
 Assignment2/.idea/modules.xml
 Assignment2/.idea/jarRepositories.xml

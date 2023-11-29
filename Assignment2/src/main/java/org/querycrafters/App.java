@@ -4,15 +4,25 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.List;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.similarities.BooleanSimilarity;
 import org.apache.lucene.search.similarities.ClassicSimilarity;
+import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
+// import org.jsoup.nodes.Document;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 
@@ -21,19 +31,23 @@ import org.querycrafters.LATimesParser;
 import org.querycrafters.Utils.commonIndexer;
 import org.querycrafters.Utils.CustomAnalyzer;
 import org.querycrafters.parsers.TopicsParser;
+import org.querycrafters.templates.Topics;
+
+import org.apache.lucene.search.Query;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import java.util.*;
+
 
 public class App 
 {
     //Path to stopwords used in the custom analyzer
     public static String stopwords_path = "./stopwords.txt";
+    private static int HITS_PER_PAGE = 1000; // Max number of search results per page
+    private static int MAX_RESULTS = 10; // Max number of search results considered
 
     public static void main(String[] args) throws IOException, ParseException {
-        /* example calls:
-            java -jar target/Assignment2-0.1.jar StandardAnalyzer BM25
-            java -jar target/Assignment2-0.1.jar SimpleAnalyzer BM25
-            java -jar target/Assignment2-0.1.jar EnglishAnalyzer Classic
-            java -jar target/Assignment2-0.1.jar EnglishAnalyzer-getDefaultStopSet Boolean
-        */
         if (args.length < 1) {
             System.out.println("Expected arguments: <analyzerType> <similarityType>");
             System.exit(1);
@@ -44,16 +58,16 @@ public class App
         System.out.printf("Using Analyzer: %s\n", analyzerType);
         Analyzer analyzer = null;
         switch (analyzerType) {
-            case "StandardAnalyzer":
+            case "Standard":
                 analyzer = new StandardAnalyzer();
                 break;
-            case "SimpleAnalyzer":
+            case "Simple":
                 analyzer = new SimpleAnalyzer();
                 break;
-            case "EnglishAnalyzer":
+            case "English":
                 analyzer = new EnglishAnalyzer();
                 break;
-            case "EnglishAnalyzer-getDefaultStopSet":
+            case "English-getDefaultStopSet":
                 analyzer = new StandardAnalyzer(EnglishAnalyzer.getDefaultStopSet());
                 break;
             case "CustomAnalyzer":
@@ -76,6 +90,9 @@ public class App
                 break;
             case "Boolean":
                 similarity = new BooleanSimilarity();
+                break;
+            case "LMDirichlet":
+                similarity = new LMDirichletSimilarity();
                 break;
             default:
                 similarity = null;
@@ -117,17 +134,58 @@ public class App
         // Todo
         System.out.println("Indexing FR routing data");
 
-        //queries
-        TopicParser tp = new TopicParser();
-        String IndexDirectory = "../Assignment2/index";
-        SearchClass searcher = new SearchClass(analyzer, IndexDirectory, similarity);
-        List<String> queries = tp.getQueries();
+        String indexDirectoryPath = "../Assignment2/index/" + analyzerType;
+        
+        Directory indexDirectory = FSDirectory.open(Paths.get(indexDirectoryPath));
+        IndexReader reader = DirectoryReader.open(indexDirectory);
+        IndexSearcher indexSearcher = new IndexSearcher(reader);
+        indexSearcher.setSimilarity(similarity);
 
-        for (String query : queries) {
-            System.out.println(query);
-            searcher.Search("Content", query);
+        List<String> resFileContent = new ArrayList<>();
+        String topicsFilePath = "Documents/topics";
+        List<Topics> topicsList = TopicsParser.parse(topicsFilePath);
+        // for (Topics topic : topicsList) {
+        //     System.out.println(topic);
+        // }
+    
+        parseSearch(topicsList, analyzer, indexSearcher, resFileContent, analyzerType, similarityType);
+
+        writeResultsToFile(resFileContent, analyzerType, similarityType);
+        System.out.printf("Created results file %s%s.txt\n\n", analyzerType, similarityType);
+
+        reader.close();
+        indexDirectory.close();
+
+    }
+
+    private static void parseSearch(List<Topics> topics, Analyzer analyzer, IndexSearcher indexSearcher, List<String> resFileContent, String analyzerType, String similarityType) throws IOException, ParseException {
+        for (Topics topic : topics) {
+            MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
+                    new String[]{"DocNo", "Title", "Date", "Author", "Content", "Section"},
+                    analyzer);
+            Query luceneQuery = queryParser.parse(topic.getTopicDesc());
+
+            TopDocs topDocs = indexSearcher.search(luceneQuery, HITS_PER_PAGE);
+            ScoreDoc[] hits = topDocs.scoreDocs;
+            List<String> resultList = new ArrayList<>();
+            for (int j = 0; j < hits.length && j < MAX_RESULTS; j++) {
+                int docId = hits[j].doc;
+                org.apache.lucene.document.Document doc = indexSearcher.doc(docId);
+                resultList.add(doc.get("id"));
+                resFileContent.add(topic.getTopicNum() + " Q0 " + doc.get("DocNo") + " " + (j + 1) + " " + hits[j].score + " " + analyzerType + similarityType);
+            }
         }
     }
+
+    // Write the results to the results directory
+    private static void writeResultsToFile(List<String> resFileContent, String analyzerType, String similarityType) throws IOException {
+        File outputDir = new File("results");
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+
+        Files.write(Paths.get("results/" + analyzerType + similarityType + ".txt"), resFileContent, Charset.forName("UTF-8"));
+    } 
 }
 // Adding modifications to App.java below
 /*
