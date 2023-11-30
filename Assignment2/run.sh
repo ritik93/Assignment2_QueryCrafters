@@ -17,7 +17,7 @@ else
 fi
 
 # Build
-# mvn package
+mvn package
 
 # Run
 java -jar target/Assignment2-0.1.jar Standard Classic yes

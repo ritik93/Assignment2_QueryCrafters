@@ -32,7 +32,7 @@ public class commonIndexer {
 
         //Configuring the Index Writer with the analyzer
         IndexWriterConfig ind_config = new IndexWriterConfig(analyzer);
-        ind_config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+        ind_config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 
         // Set the similarity score
         ind_config.setSimilarity(similarity);

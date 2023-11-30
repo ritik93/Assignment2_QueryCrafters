@@ -1,8 +1,6 @@
 package org.querycrafters;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -28,6 +26,7 @@ import org.apache.lucene.analysis.core.SimpleAnalyzer;
 
 import org.querycrafters.FBSIParser;
 import org.querycrafters.LATimesParser;
+import org.querycrafters.Fr94Parser;
 import org.querycrafters.Utils.commonIndexer;
 import org.querycrafters.Utils.CustomAnalyzer;
 import org.querycrafters.parsers.TopicsParser;
@@ -82,9 +81,9 @@ public class App
             commonIndexer ft_indexer = new commonIndexer();
             ft_indexer.gen_ind(analyzer, similarity);
 
-            // System.out.println("Indexing FR routing data");
-            // FR94Parser FR94Parser = new FR94Parser(analyzer, outputDir);
-            // FR94Parser.indexFR94Parser();
+            System.out.println("Indexing FR routing data");
+            Fr94Parser FR94Parser = new Fr94Parser(analyzer, outputDir);
+            FR94Parser.indexFr94();
         } else {
             System.out.println("Not performing indexing");
         }
