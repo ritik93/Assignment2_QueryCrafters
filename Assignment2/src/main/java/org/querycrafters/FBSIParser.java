@@ -22,7 +22,7 @@ public class FBSIParser {
         this.directory = FSDirectory.open(Paths.get(outputDir));
     }
 
-    public void index(File file) throws IOException {
+    private void index(File file) throws IOException {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         IndexWriter writer = new IndexWriter(directory, config);
@@ -104,6 +104,21 @@ public class FBSIParser {
                 System.out.print(String.format("Unkown field parsed: %s\n => %s\n\n",currentField, currentValue.toString()));
         }
     }
+
+    public void indexFBSI() throws IOException {
+        File FBSIfolder = new File(System.getProperty("user.dir") + "/src/main/resources/Assignment Two/fbis");
+        File[] FBSIfiles = FBSIfolder.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith("fb");
+            }
+        });
+        for (File file : FBSIfiles) {
+            index(file);
+        }
+        shutdown();
+    }
+
 
     public static void main(String[] args) throws IOException {
         StandardAnalyzer analyzer = new StandardAnalyzer();

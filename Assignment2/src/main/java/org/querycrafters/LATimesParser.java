@@ -113,6 +113,20 @@ public class LATimesParser {
         directory.close();
     }
 
+    public void indexLATimes() throws IOException {
+        File LATimesfolder = new File(System.getProperty("user.dir") + "/src/main/resources/Assignment Two/latimes");
+        File[] LATimesfiles = LATimesfolder.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith("la");
+            }
+        });
+        for (File file : LATimesfiles) {
+            index(file);
+        }
+        shutdown();
+    }
+
     public static void main(String[] args) throws IOException {
         StandardAnalyzer analyzer = new StandardAnalyzer();
         String outputDir = "../Assignment2/index";

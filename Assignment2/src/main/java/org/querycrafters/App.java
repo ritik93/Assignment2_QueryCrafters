@@ -42,100 +42,59 @@ import java.util.*;
 
 public class App 
 {
-    //Path to stopwords used in the custom analyzer
-    public static String stopwords_path = "./stopwords.txt";
-    private static int HITS_PER_PAGE = 1000; // Max number of search results per page
-    private static int MAX_RESULTS = 10; // Max number of search results considered
+    
+    public static String stopwords_path = "./stopwords.txt";    // Path to stopwords used in the custom analyzer
+    private static int HITS_PER_PAGE = 1000;                    // Max number of search results per page
+    private static int MAX_RESULTS = 10;                        // Max number of search results considered
 
     public static void main(String[] args) throws IOException, ParseException {
-        if (args.length < 1) {
-            System.out.println("Expected arguments: <analyzerType> <similarityType>");
-            System.exit(1);
+        if (args.length < 2) {
+            displayUsage();;
+            return;
         }
         String analyzerType = args[0];
-        String outputDir = "../Assignment2/index/" + analyzerType;
-
-        System.out.printf("Using Analyzer: %s\n", analyzerType);
-        Analyzer analyzer = null;
-        switch (analyzerType) {
-            case "Standard":
-                analyzer = new StandardAnalyzer();
-                break;
-            case "Simple":
-                analyzer = new SimpleAnalyzer();
-                break;
-            case "English":
-                analyzer = new EnglishAnalyzer();
-                break;
-            case "English-getDefaultStopSet":
-                analyzer = new StandardAnalyzer(EnglishAnalyzer.getDefaultStopSet());
-                break;
-            case "CustomAnalyzer":
-                analyzer = new CustomAnalyzer();
-                break;
-            default:
-                analyzer = null;
-                System.out.println("Invalid analyzer type. Valid: StandardAnalyzer, SimpleAnalyzer, EnglishAnalyzer or CustomAnalyzer.");
-        }
-
         String similarityType = args[1];
-        System.out.printf("Using Similarity Score: %s\n", similarityType);
-        Similarity similarity = null;
-        switch (similarityType) {
-            case "Classic":
-                similarity = new ClassicSimilarity();
-                break;
-            case "BM25":
-                similarity = new BM25Similarity();
-                break;
-            case "Boolean":
-                similarity = new BooleanSimilarity();
-                break;
-            case "LMDirichlet":
-                similarity = new LMDirichletSimilarity();
-                break;
-            default:
-                similarity = null;
-                System.out.println("Invalid Similarity Type. Valid : Classic, BM25, or Boolean");
+        String performIndex = "no";
+        if (args.length > 2) {
+            performIndex = args[2];
         }
-
-        System.out.println("Indexing Foreign Broadcast Information Service");
-        FBSIParser FBSIParser = new FBSIParser(analyzer, outputDir);
-        File FBSIfolder = new File(System.getProperty("user.dir") + "/src/main/resources/Assignment Two/fbis");
-        File[] FBSIfiles = FBSIfolder.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.startsWith("fb");
-            }
-        });
-        for (File file : FBSIfiles) {
-            FBSIParser.index(file);
-        }
-        FBSIParser.shutdown();
-
-        System.out.println("Indexing LATimes");
-        LATimesParser LATimesParser = new LATimesParser(analyzer, outputDir);
-        File LATimesfolder = new File(System.getProperty("user.dir") + "/src/main/resources/Assignment Two/latimes");
-        File[] LATimesfiles = LATimesfolder.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.startsWith("la");
-            }
-        });
-        for (File file : LATimesfiles) {
-            LATimesParser.index(file);
-        }
-        LATimesParser.shutdown();
-
-        System.out.println("Indexing Financial Times");
-        commonIndexer ft_indexer = new commonIndexer();
-        ft_indexer.gen_ind(analyzer, similarity);
-
-        // Todo
-        System.out.println("Indexing FR routing data");
-
-        String indexDirectoryPath = "../Assignment2/index/" + analyzerType;
         
+        System.out.printf("Using Analyzer: %s\n", analyzerType);
+        Analyzer analyzer = createAnalyzer(analyzerType);
+    
+        System.out.printf("Using Similarity Score: %s\n", similarityType);
+        Similarity similarity = createSimilarity(similarityType);
+        
+        if (performIndex.equals("yes")) {
+            System.out.println("Performing indexing...");
+
+            String outputDir = "../Assignment2/index/" + analyzerType;
+
+            System.out.println("Indexing Foreign Broadcast Information Service...");
+            FBSIParser fbsiParser = new FBSIParser(analyzer, outputDir);
+            fbsiParser.indexFBSI();
+
+            System.out.println("Indexing LATimes...");
+            LATimesParser LATimesParser = new LATimesParser(analyzer, outputDir);
+            LATimesParser.indexLATimes();
+
+            System.out.println("Indexing Financial Times...");
+            commonIndexer ft_indexer = new commonIndexer();
+            ft_indexer.gen_ind(analyzer, similarity);
+
+            // System.out.println("Indexing FR routing data");
+            // FR94Parser FR94Parser = new FR94Parser(analyzer, outputDir);
+            // FR94Parser.indexFR94Parser();
+        } else {
+            System.out.println("Not performing indexing");
+        }
+        
+        System.out.println("Performing search and writing results...");
+        performSearchAndWriteResults(analyzer, similarity, analyzerType, similarityType);
+    }
+
+    private static void performSearchAndWriteResults(Analyzer analyzer, Similarity similarity,  String analyzerType, String similarityType) throws IOException, ParseException {
+        String indexDirectoryPath = "../Assignment2/index/" + analyzerType;
         Directory indexDirectory = FSDirectory.open(Paths.get(indexDirectoryPath));
         IndexReader reader = DirectoryReader.open(indexDirectory);
         IndexSearcher indexSearcher = new IndexSearcher(reader);
@@ -143,22 +102,7 @@ public class App
 
         List<String> resFileContent = new ArrayList<>();
         String topicsFilePath = "Documents/topics";
-        List<Topics> topicsList = TopicsParser.parse(topicsFilePath);
-        // for (Topics topic : topicsList) {
-        //     System.out.println(topic);
-        // }
-    
-        parseSearch(topicsList, analyzer, indexSearcher, resFileContent, analyzerType, similarityType);
-
-        writeResultsToFile(resFileContent, analyzerType, similarityType);
-        System.out.printf("Created results file %s%s.txt\n\n", analyzerType, similarityType);
-
-        reader.close();
-        indexDirectory.close();
-
-    }
-
-    private static void parseSearch(List<Topics> topics, Analyzer analyzer, IndexSearcher indexSearcher, List<String> resFileContent, String analyzerType, String similarityType) throws IOException, ParseException {
+        List<Topics> topics = TopicsParser.parse(topicsFilePath);
         for (Topics topic : topics) {
             MultiFieldQueryParser queryParser = new MultiFieldQueryParser(
                     new String[]{"DocNo", "Title", "Date", "Author", "Content", "Section"},
@@ -175,17 +119,58 @@ public class App
                 resFileContent.add(topic.getTopicNum() + " Q0 " + doc.get("DocNo") + " " + (j + 1) + " " + hits[j].score + " " + analyzerType + similarityType);
             }
         }
+        writeResultsToFile(resFileContent, analyzerType, similarityType);
+        reader.close();
+        indexDirectory.close();
     }
 
     // Write the results to the results directory
     private static void writeResultsToFile(List<String> resFileContent, String analyzerType, String similarityType) throws IOException {
-        File outputDir = new File("results");
-        if (!outputDir.exists()) {
-            outputDir.mkdirs();
+        File resultsDir = new File("results");
+        if (!resultsDir.exists()) {
+            resultsDir.mkdirs();
         }
 
         Files.write(Paths.get("results/" + analyzerType + similarityType + ".txt"), resFileContent, Charset.forName("UTF-8"));
     } 
+
+    private static void displayUsage() {
+        System.out.println("Expected arguments: <analyzerType> <similarityType>");
+    }
+
+    private static Analyzer createAnalyzer(String analyzerType) {
+        switch (analyzerType) {
+            case "Standard":
+                return new StandardAnalyzer();
+            case "Simple":
+                return new SimpleAnalyzer();
+            case "English":
+                return new EnglishAnalyzer();
+            case "English-getDefaultStopSet":
+                return new StandardAnalyzer(EnglishAnalyzer.getDefaultStopSet());
+            case "CustomAnalyzer":
+                return new CustomAnalyzer();
+            default:
+                System.out.println("Invalid analyzer type. Valid: StandardAnalyzer, SimpleAnalyzer, EnglishAnalyzer, or CustomAnalyzer.");
+                return null;
+        }
+    }
+
+    private static Similarity createSimilarity(String similarityType) {
+        switch (similarityType) {
+            case "Classic":
+                return new ClassicSimilarity();
+            case "BM25":
+                return new BM25Similarity();
+            case "Boolean":
+                return new BooleanSimilarity();
+            case "LMDirichlet":
+                return new LMDirichletSimilarity();
+            default:
+                System.out.println("Invalid Similarity Type. Valid: Classic, BM25, Boolean, or LMDirichlet");
+                return null;
+        }
+    }
 }
 // Adding modifications to App.java below
 /*
