@@ -88,16 +88,37 @@ public class Fr94Parser {
         directory.close();
     }
 
+    public static String removeHTMLComments(String input) {
+        StringBuilder output = new StringBuilder();
+
+        int startIndex, endIndex;
+        while ((startIndex = input.indexOf("<!--")) != -1) {
+            endIndex = input.indexOf("-->", startIndex);
+            if (endIndex == -1) {
+                break;
+            }
+            output.append(input, 0, startIndex);
+            input = input.substring(endIndex + 3);
+        }
+        output.append(input);
+
+        return output.toString();
+    }
+
     private void addToDoc(StandardDoc doc, String currentField, String currentValue) throws IOException {
+        String newCurrentValue = null;
         switch (currentField) {
             case "DOCNO":
-                doc.addDocNo(currentValue);
+                newCurrentValue = removeHTMLComments(currentValue);
+                doc.addDocNo(newCurrentValue);
                 break;
             case "TEXT":
-                doc.addContent(currentValue);
+                newCurrentValue = removeHTMLComments(currentValue);
+                doc.addContent(newCurrentValue);
                 break;
             case "DATE":
-                doc.addDate(currentValue);
+                newCurrentValue = removeHTMLComments(currentValue);
+                doc.addDate(newCurrentValue);
                 break;
             default:
                 //System.out.print(String.format("Unknown field parsed: %s\n => %s\n\n", currentField, currentValue));
