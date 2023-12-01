@@ -2,16 +2,22 @@ package org.querycrafters;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.BM25Similarity;
 import org.apache.lucene.search.similarities.BooleanSimilarity;
@@ -36,6 +42,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+
 import java.util.*;
 
 
@@ -89,7 +97,7 @@ public class App
         }
         
         System.out.println("Performing search and writing results...");
-        performSearchAndWriteResults(analyzer, similarity, analyzerType, similarityType);
+        performSearchAndWriteResults2(analyzer, similarity, analyzerType, similarityType);
     }
 
     private static void performSearchAndWriteResults(Analyzer analyzer, Similarity similarity,  String analyzerType, String similarityType) throws IOException, ParseException {
@@ -122,6 +130,58 @@ public class App
         reader.close();
         indexDirectory.close();
     }
+
+    private static void performSearchAndWriteResults2(Analyzer analyzer, Similarity similarity, String analyzerType, String similarityType) throws IOException, ParseException {
+        String indexDirectoryPath = "../Assignment2/index/" + analyzerType;
+        Directory indexDirectory = FSDirectory.open(Paths.get(indexDirectoryPath));
+        IndexReader reader = DirectoryReader.open(indexDirectory);
+        IndexSearcher indexSearcher = new IndexSearcher(reader);
+        indexSearcher.setSimilarity(similarity);
+
+        List<String> resFileContent = new ArrayList<>();
+        String topicsFilePath = "Documents/topics";
+        List<Topics> topics = TopicsParser.parse(topicsFilePath);
+        for (Topics topic : topics) {
+            BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
+
+            // Tokenize and add terms from topic description, narrative, and title
+            String[] topicFields = { "DocNo", "Title", "Date", "Author", "Content", "Section" };
+            String topicQuery = topic.getTopicDesc() + " " + topic.getTopicNarrative() + " " + topic.getTopicTitle();
+
+            // Tokenize the topic query using the analyzer
+            TokenStream stream = analyzer.tokenStream(null, new StringReader(topicQuery));
+            CharTermAttribute termAttribute = stream.addAttribute(CharTermAttribute.class);
+            stream.reset();
+
+            while (stream.incrementToken()) {
+                // Add each tokenized term to the query
+                booleanQueryBuilder.add(new TermQuery(new Term("Content", termAttribute.toString())), BooleanClause.Occur.SHOULD);
+            }
+            stream.end();
+            stream.close();
+
+            // Build the query
+            BooleanQuery query = booleanQueryBuilder.build();
+
+            TopDocs topDocs = indexSearcher.search(query, HITS_PER_PAGE);
+                        ScoreDoc[] hits = topDocs.scoreDocs;
+            List<String> resultList = new ArrayList<>();
+            for (int j = 0; j < hits.length && j < MAX_RESULTS; j++) {
+                int docId = hits[j].doc;
+                org.apache.lucene.document.Document doc = indexSearcher.doc(docId);
+                resultList.add(doc.get("id"));
+                resFileContent.add(topic.getTopicNum() + " Q0 " + doc.get("DocNo") + " " + (j + 1) + " " + hits[j].score + " " + analyzerType + similarityType);
+            }
+        }
+        writeResultsToFile(resFileContent, analyzerType, similarityType);
+        reader.close();
+        indexDirectory.close();
+    }
+
+
+
+
+
 
     // Write the results to the results directory
     private static void writeResultsToFile(List<String> resFileContent, String analyzerType, String similarityType) throws IOException {
