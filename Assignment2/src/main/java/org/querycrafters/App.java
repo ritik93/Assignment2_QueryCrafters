@@ -6,6 +6,8 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Stack;
+import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -34,6 +36,7 @@ import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.querycrafters.FBSIParser;
 import org.querycrafters.LATimesParser;
 import org.querycrafters.Fr94Parser;
+
 import org.querycrafters.Utils.commonIndexer;
 import org.querycrafters.Utils.CustomAnalyzer;
 import org.querycrafters.parsers.TopicsParser;
@@ -46,6 +49,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 
 import java.util.*;
+
 
 
 public class App 
@@ -390,7 +394,7 @@ public class App
             case "CustomAnalyzer":
                 return new CustomAnalyzer();
             default:
-                System.out.println("Invalid analyzer type. Valid: StandardAnalyzer, SimpleAnalyzer, EnglishAnalyzer, or CustomAnalyzer.");
+                System.out.println("Invalid analyzer type. Valid: Standard, Simple, English, English-getDefaultStopSet.");
                 return null;
         }
     }
@@ -408,6 +412,94 @@ public class App
             default:
                 System.out.println("Invalid Similarity Type. Valid: Classic, BM25, Boolean, or LMDirichlet");
                 return null;
+        }
+
+
+
+        // FR94Parser FRParser = new FR94Parser(analyzer, outputDir);
+        // File FRfolder = new File (System.getProperty("user.dir") + "/src/main/resources/Assignment Two/fr94/01");
+
+        // File[] FRfiles = FRfolder.listFiles(new FilenameFilter() {
+        //     @Override
+        //     public boolean accept(File dir, String name) {
+        //         return name.startsWith("fr");
+        //     }
+        // });
+        // for (File FRfile : FRfiles) {
+        //     FRParser.index(FRfile);
+        // }
+        // FRParser.shutdown();
+
+
+
+        FR94Parser FRParser = new FR94Parser(analyzer, outputDir);
+        File FRfolder = new File(System.getProperty("user.dir") + "/src/main/resources/Assignment Two/fr94");
+
+        Stack<File> directoryStack = new Stack<>();
+        directoryStack.push(FRfolder);
+
+        while (!directoryStack.isEmpty()) {
+            File currentDir = directoryStack.pop();
+            File[] files = currentDir.listFiles();
+
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        directoryStack.push(file); // Push subdirectories to stack for further processing
+                    } else if (file.getName().startsWith("fr")) {
+                        FRParser.index(file); // Process files
+                    }
+                }
+            }
+        }
+
+
+    
+        System.out.println("Indexing Foreign Broadcast Information Service");
+        FBSIParser FBSIParser = new FBSIParser(analyzer, outputDir);
+        File FBSIfolder = new File(System.getProperty("user.dir") + "/src/main/resources/Assignment Two/fbis");
+        File[] FBSIfiles = FBSIfolder.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith("fb");
+            }
+        });
+        for (File FBSIfile : FBSIfiles) {
+            FBSIParser.index(FBSIfile);
+        }
+        FBSIParser.shutdown();
+
+        System.out.println("Indexing LATimes");
+        LATimesParser LATimesParser = new LATimesParser(analyzer, outputDir);
+        File LATimesfolder = new File(System.getProperty("user.dir") + "/src/main/resources/Assignment Two/latimes");
+        File[] LATimesfiles = LATimesfolder.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith("la");
+            }
+        });
+        for (File LATimesfile : LATimesfiles) {
+            LATimesParser.index(LATimesfile);
+        }
+        LATimesParser.shutdown();
+
+        System.out.println("Indexing Financial Times");
+        commonIndexer ft_indexer = new commonIndexer();
+        ft_indexer.gen_ind(analyzer, similarity);
+
+        // Todo
+        System.out.println("Indexing FR routing data");
+
+        //queries
+        TopicParser tp = new TopicParser();
+        String IndexDirectory = "../Assignment2/index";
+        SearchClass searcher = new SearchClass(analyzer, IndexDirectory, similarity);
+        List<String> queries = tp.getQueries();
+
+        for (String query : queries) {
+            System.out.println(query);
+            searcher.Search("Content", query);
+>>>>>>> 44a36aaaee5f7d3252394168ad6a618a5ae479d2
         }
     }
 }
