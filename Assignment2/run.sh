@@ -2,12 +2,14 @@
 
 export INFO_HOME=$(pwd)
 
-# if [ -d "index" ]; then
-#     rm -r "index"
-#     echo "Index deleted"
-# else
-#     echo "Index does not exist"
-# fi
+
+if [ -d "index" ]; then
+    rm -r "index"
+    echo "Index deleted"
+else
+    echo "Index does not exist"
+fi
+
 
 if [ -d "results" ]; then
     rm -r "results"
@@ -20,19 +22,20 @@ fi
 mvn package
 
 # Run
-java -jar target/Assignment2-0.1.jar Standard Classic 
+
+java -jar target/Assignment2-0.1.jar Standard Classic yes
 java -jar target/Assignment2-0.1.jar Standard BM25
 java -jar target/Assignment2-0.1.jar Standard Boolean
 java -jar target/Assignment2-0.1.jar Standard LMDirichlet
-java -jar target/Assignment2-0.1.jar Simple Classic 
+java -jar target/Assignment2-0.1.jar Simple Classic yes
 java -jar target/Assignment2-0.1.jar Simple BM25
 java -jar target/Assignment2-0.1.jar Simple Boolean
 java -jar target/Assignment2-0.1.jar Simple LMDirichlet
-java -jar target/Assignment2-0.1.jar English Classic 
+java -jar target/Assignment2-0.1.jar English Classic yes
 java -jar target/Assignment2-0.1.jar English BM25
 java -jar target/Assignment2-0.1.jar English Boolean
 java -jar target/Assignment2-0.1.jar English LMDirichlet
-java -jar target/Assignment2-0.1.jar English-getDefaultStopSet Classic 
+java -jar target/Assignment2-0.1.jar English-getDefaultStopSet Classic yes
 java -jar target/Assignment2-0.1.jar English-getDefaultStopSet BM25
 java -jar target/Assignment2-0.1.jar English-getDefaultStopSet Boolean
 java -jar target/Assignment2-0.1.jar English-getDefaultStopSet LMDirichlet
