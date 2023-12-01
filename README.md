@@ -8,11 +8,13 @@
 
 To compile and evaluate the search engine run the following from the project directory:
 ~~~
+cd Assignment2/
 ./run.sh
 ~~~
 
 If you want to run the scripts manually.
 ~~~
+cd Assignment2/
 mvn package
 rm -r index/
 rm -r results/
